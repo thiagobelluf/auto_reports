@@ -1,0 +1,6 @@
+w3lib==1.13.0
+requests==2.9.1
+retrying==1.3.3
+google-api-python-client==1.5.0
+PyDrive==1.0.1
+zenpy==1.0.8

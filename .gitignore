@@ -1,7 +1,5 @@
-<<<<<<< HEAD
 *.pyc
 *.swp
-=======
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -64,4 +62,3 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
->>>>>>> 0e9decee7f0bb028f8a9a7ab3a630a235dc1330f

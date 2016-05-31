@@ -84,7 +84,8 @@ def incremental_export_from_date(start_date):
                 utils.log('[ERROR] Could not parse ticket [%s]. Reason: %s' % (ticket.id, e))
                 errors += 1
                 continue
-                        utils.log('Retrived %d tickets so far' % total)
+
+        utils.log('Retrived %d tickets so far' % total)
 
     except Exception as e:
         utils.log('[ERROR] Connection error [%s]' % e)
@@ -109,6 +110,7 @@ if __name__== '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('start_date')
     parser.add_argument('end_date')
+    parser.add_argument('-i', '--incremental-export', dest='inc_export', default=False, action='store_true')
     parser.add_argument('--csv', default=False, action='store_true', help='Output items to csv file. Use with --output-file-template option to determine output file name.')
     parser.add_argument('--json', default=False, action='store_true', help='Output items to json file. Use with --output-file-template option to determine output file name.')
     parser.add_argument('-o', '--output-file-template', dest='output_file_template', default='zendesk_tickets_%s.csv',
@@ -117,7 +119,10 @@ if __name__== '__main__':
 
     for s, e in utils.iterate_date(args.start_date, args.end_date):
         utils.log('Getting tickets from zendesk for dates [%s] [%s]' % (s, e))
-        tickets = get_all_tickets_created_between(s, e)
+        if args.inc_export:
+            tickets = incremental_export_from_date(s)
+        else:
+            tickets = get_all_tickets_created_between(s, e)
 
         start_end = '%s_%s' % (_datetime_to_date(s), _datetime_to_date(e))
         output_file_name = _make_file_name(args.output_file_template, start_end)

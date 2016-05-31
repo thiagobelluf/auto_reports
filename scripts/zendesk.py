@@ -66,6 +66,33 @@ def get_all_tickets_created_between(start_date, end_date):
     utils.log('Errors: %d (%.2f)'% (errors, total > 0 and 100*(errors/total)))
 
 
+def incremental_export_from_date(start_date):
+    connect()
+    st = timeparser.parse(start_date)
+
+    total, errors = 0, 0
+    utils.log('Starting incremental export from date [%s]' % start_date)
+    try:
+        results = CONN.tickets.incremental(start_time=st)
+        for ticket in results:
+            total =+ 1
+
+            try:
+                yield parse_ticket(ticket)
+                utils.log('Total: %d' % total)
+            except Exception as e:
+                utils.log('[ERROR] Could not parse ticket [%s]. Reason: %s' % (ticket.id, e))
+                errors += 1
+                continue
+                        utils.log('Retrived %d tickets so far' % total)
+
+    except Exception as e:
+        utils.log('[ERROR] Connection error [%s]' % e)
+
+    utils.log('Found %d tickets for dates [%s] [%s]' % (total, st, et))
+    utils.log('Errors: %d (%.2f)'% (errors, total > 0 and 100*(errors/total)))
+
+
 def _make_file_name(filename_template, *args):
     if '%s' in filename_template:
         filename = filename_template % args

@@ -51,14 +51,17 @@ def get_all_tickets_created_between(start_date, end_date):
     et = timeparser.parse(end_date)
 
     total, errors = 0, 0
-    for ticket in CONN.search(order_by='created_at', created_after=st, created_before=et, type='ticket'):
-        try:
-            yield parse_ticket(ticket)
-        except Exception as e:
-            utils.log('[ERROR] Could not parse ticket [%s]. Reason: %s' % (ticket.id, e))
-            errors += 1
-            continue
-        total =+ 1
+    try:
+        for ticket in CONN.search(order_by='created_at', created_after=st, created_before=et, type='ticket'):
+            try:
+                yield parse_ticket(ticket)
+            except Exception as e:
+                utils.log('[ERROR] Could not parse ticket [%s]. Reason: %s' % (ticket.id, e))
+                errors += 1
+                continue
+            total =+ 1
+    except Exception as e:
+        utils.log('[ERROR] Connection error [%s]' % e)
     utils.log('Found %d tickets for dates [%s] [%s]' % (total, st, et))
     utils.log('Errors: %d (%.2f)'% (errors, total > 0 and 100*(errors/total)))
 
@@ -80,6 +83,7 @@ if __name__== '__main__':
     parser.add_argument('start_date')
     parser.add_argument('end_date')
     parser.add_argument('--csv', default=False, action='store_true', help='Output items to csv file. Use with --output-file-template option to determine output file name.')
+    parser.add_argument('--json', default=False, action='store_true', help='Output items to json file. Use with --output-file-template option to determine output file name.')
     parser.add_argument('-o', '--output-file-template', dest='output_file_template', default='zendesk_tickets_%s.csv',
         help='Template name for the output file. To be used with --csv option. If %s is in the template, it will be replaced by "<start_date>-<end-date>"')
     args = parser.parse_args()
@@ -94,6 +98,9 @@ if __name__== '__main__':
         if args.csv:
             utils.log('Dumping tickets to csv file [%s]' % output_file_name)
             utils.dump_to_csv_file(tickets, output_fpath=output_file_name)
+        elif args.json:
+            utils.log('Dumping tickets to json file [%s]' % output_file_name)
+            utils.dump_to_json_file(tickets, output_fpath=output_file_name)
         else:
             for t in tickets:
                 print json.dumps(t)

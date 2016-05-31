@@ -83,14 +83,14 @@ def load_from_csv_file(f_path):
                 yield i
 
 
+def utf_8_encoder(data):
+    for k in data.keys():
+        if isinstance(data[k], basestring):
+            data[k] = data[k].encode('utf-8')
+    return data
+
+
 def dump_to_csv_file(content, fieldnames=None, output_fpath=None):
-    def utf_8_encoder(data):
-        for k in data.keys():
-            if isinstance(data[k], basestring):
-                data[k] = data[k].encode('utf-8')
-        return data
-
-
     output_fpath = output_fpath or make_tmp_file()
     log('[CSV File] Dumping content to csv: [%s]' % output_fpath)
     output = open(output_fpath,  'wb')
@@ -103,6 +103,16 @@ def dump_to_csv_file(content, fieldnames=None, output_fpath=None):
     output.close()
     return output_fpath
 
+
+def dump_to_json_file(content, output_fpath=None):
+    output_fpath = output_fpath or make_tmp_file()
+    log('[CSV File] Dumping content to json: [%s]' % output_fpath)
+    output = open(output_fpath,  'wb')
+    for c in content:
+        output.write('%s\n' % json.dumps(utf_8_encoder(c)))
+    output.close()
+    return output_fpath
+ 
 
 def make_tmp_file():
     _, fpath = tempfile.mkstemp()

@@ -117,22 +117,28 @@ if __name__== '__main__':
         help='Template name for the output file. To be used with --csv option. If %s is in the template, it will be replaced by "<start_date>-<end-date>"')
     args = parser.parse_args()
 
-    for s, e in utils.iterate_date(args.start_date, args.end_date):
-        utils.log('Getting tickets from zendesk for dates [%s] [%s]' % (s, e))
-        if args.inc_export:
-            tickets = incremental_export_from_date(s)
-        else:
-            tickets = get_all_tickets_created_between(s, e)
+    if args.inc_export:
+        utils.log('Getting tickets from zendesk from date [%s]' % s)
+        tickets = incremental_export_from_date(s)
 
-        start_end = '%s_%s' % (_datetime_to_date(s), _datetime_to_date(e))
+        start_end = '%s' % _datetime_to_date(s)
         output_file_name = _make_file_name(args.output_file_template, start_end)
 
-        if args.csv:
-            utils.log('Dumping tickets to csv file [%s]' % output_file_name)
-            utils.dump_to_csv_file(tickets, output_fpath=output_file_name)
-        elif args.json:
-            utils.log('Dumping tickets to json file [%s]' % output_file_name)
-            utils.dump_to_json_file(tickets, output_fpath=output_file_name)
-        else:
-            for t in tickets:
-                print json.dumps(t)
+        utils.dump_to_csv_file(tickets, output_fpath=output_file_name)
+    else:
+        for s, e in utils.iterate_date(args.start_date, args.end_date):
+            utils.log('Getting tickets from zendesk for dates [%s] [%s]' % (s, e))
+            tickets = get_all_tickets_created_between(s, e)
+
+            start_end = '%s_%s' % (_datetime_to_date(s), _datetime_to_date(e))
+            output_file_name = _make_file_name(args.output_file_template, start_end)
+
+            if args.csv:
+                utils.log('Dumping tickets to csv file [%s]' % output_file_name)
+                utils.dump_to_csv_file(tickets, output_fpath=output_file_name)
+            elif args.json:
+                utils.log('Dumping tickets to json file [%s]' % output_file_name)
+                utils.dump_to_json_file(tickets, output_fpath=output_file_name)
+            else:
+                for t in tickets:
+                    print json.dumps(t)

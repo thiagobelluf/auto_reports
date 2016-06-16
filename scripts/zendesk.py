@@ -90,7 +90,7 @@ def incremental_export_from_date(start_date):
     except Exception as e:
         utils.log('[ERROR] Connection error [%s]' % e)
 
-    utils.log('Found %d tickets for dates [%s] [%s]' % (total, st, et))
+    utils.log('Found %d tickets from date [%s]' % (total, st))
     utils.log('Errors: %d (%.2f)'% (errors, total > 0 and 100*(errors/total)))
 
 
@@ -118,13 +118,15 @@ if __name__== '__main__':
     args = parser.parse_args()
 
     if args.inc_export:
+        s = args.start_date
         utils.log('Getting tickets from zendesk from date [%s]' % s)
         tickets = incremental_export_from_date(s)
+        output_file_name = _make_file_name(args.output_file_template, timeparser.parse(args.start_date))
 
-        start_end = '%s' % _datetime_to_date(s)
-        output_file_name = _make_file_name(args.output_file_template, start_end)
-
-        utils.dump_to_csv_file(tickets, output_fpath=output_file_name)
+        if args.csv:
+            utils.dump_to_csv_file(tickets, output_fpath=output_file_name)
+        elif args.json:
+            utils.dump_to_json_file(tickets, output_fpath=output_file_name)
     else:
         for s, e in utils.iterate_date(args.start_date, args.end_date):
             utils.log('Getting tickets from zendesk for dates [%s] [%s]' % (s, e))
